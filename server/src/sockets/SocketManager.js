@@ -69,16 +69,20 @@ class SocketManager {
       });
 
       socket.on('disconnect', async () => {
-        const userId = socket.userId;
-        if (userId) {
-          if (redis) {
-            await redis.srem(this.REDIS_KEY, userId);
-            const onlineUsers = await redis.smembers(this.REDIS_KEY);
-            this.io.emit('online_users', onlineUsers);
+        try {
+          const userId = socket.userId;
+          if (userId) {
+            if (redis) {
+              await redis.srem(this.REDIS_KEY, userId);
+              const onlineUsers = await redis.smembers(this.REDIS_KEY);
+              this.io.emit('online_users', onlineUsers);
+            }
+            this.io.emit('user_offline', userId);
+            await userService.updateLastSeen(userId);
+            console.log(`User ${userId} is offline and lastSeen updated`);
           }
-          this.io.emit('user_offline', userId);
-          await userService.updateLastSeen(userId);
-          console.log(`User ${userId} is offline and lastSeen updated`);
+        } catch (error) {
+          console.error('Socket disconnect error handling failed:', error);
         }
       });
     });

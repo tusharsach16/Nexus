@@ -38,14 +38,21 @@ app.use((err, req, res, next) => {
     const message = err.message || 'Internal Server Error';
 
     if (statusCode === 500) {
-        console.error('SERVER ERROR:', err.stack || err);
+        console.error('SERVER ERROR [500]:', {
+          message: err.message,
+          stack: err.stack,
+          url: req.originalUrl,
+          method: req.method,
+          body: req.body,
+          user: req.user?.id
+        });
     } else {
         console.warn(`Auth/Validation Warning (${statusCode}):`, message);
     }
 
     res.status(statusCode).json({
         success: false,
-        message,
+        message: statusCode === 500 ? 'An internal server error occurred' : message,
         errors: err.errors || []
     });
 });

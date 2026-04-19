@@ -3,24 +3,40 @@ import friendRepository from '../repositories/FriendRepository.js';
 
 class UserService {
   async updateLastSeen(userId) {
+    if (!userId) return;
     try {
       await userRepository.updateProfile(userId, { 
         lastSeen: new Date(),
         isOnline: false 
       });
     } catch (error) {
-      console.error('Failed to update lastSeen:', error);
+      console.warn(`Could not update lastSeen for user ${userId}:`, error.message);
     }
   }
 
   async getProfile(userId) {
+    if (!userId) {
+      const err = new Error('User ID is required');
+      err.statusCode = 400;
+      throw err;
+    }
+
     const user = await userRepository.findById(userId);
     if (!user) {
-      throw { statusCode: 404, message: 'User not found' };
+      const err = new Error('User not found');
+      err.statusCode = 404;
+      throw err;
     }
     
-    // Fetch profile separately as findById in base repo doesn't include it
-    return await userRepository.findByEmail(user.email);
+    // Fetch user with profile included
+    const userWithProfile = await userRepository.findByEmail(user.email);
+    if (!userWithProfile) {
+      const err = new Error('Profile not found');
+      err.statusCode = 404;
+      throw err;
+    }
+
+    return userWithProfile;
   }
 
   async updateProfile(userId, profileData) {
