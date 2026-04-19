@@ -64,6 +64,21 @@ const Dashboard = () => {
         }
         fetchConversations(); // Update sidebar preview
       });
+
+      subscribeToStatus((data) => {
+        const { setOnlineUsers } = useChatStore.getState();
+        const currentOnlineUsers = useChatStore.getState().onlineUsers;
+
+        if (data.type === 'online_users') {
+          setOnlineUsers(data.users);
+        } else if (data.type === 'user_online') {
+          if (!currentOnlineUsers.includes(data.userId)) {
+            setOnlineUsers([...currentOnlineUsers, data.userId]);
+          }
+        } else if (data.type === 'user_offline') {
+          setOnlineUsers(currentOnlineUsers.filter(id => id !== data.userId));
+        }
+      });
     }
 
     return () => {

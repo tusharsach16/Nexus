@@ -28,6 +28,22 @@ export const subscribeToMessages = (cb) => {
 	});
 };
 
+export const subscribeToStatus = (cb) => {
+	if (!socket) return;
+	
+	socket.on('online_users', (users) => {
+		cb({ type: 'online_users', users });
+	});
+	
+	socket.on('user_online', (userId) => {
+		cb({ type: 'user_online', userId });
+	});
+	
+	socket.on('user_offline', (userId) => {
+		cb({ type: 'user_offline', userId });
+	});
+};
+
 export const sendMessage = (messageData) => {
   if (socket) socket.emit('send_message', messageData);
 };
