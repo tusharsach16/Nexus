@@ -1,7 +1,22 @@
 import cloudinary from '../config/cloudinary.js';
+import fs from 'fs';
+
+const isCloudinaryConfigured = () => (
+  Boolean(process.env.CLOUDINARY_CLOUD_NAME) &&
+  Boolean(process.env.CLOUDINARY_API_KEY) &&
+  Boolean(process.env.CLOUDINARY_API_SECRET)
+);
 
 class StorageService {
   async uploadFile(file, folder = 'chat-app/attachments') {
+    if (!isCloudinaryConfigured()) {
+      throw { statusCode: 503, message: 'Upload service is not configured on the server' };
+    }
+
+    if (!file?.path || !fs.existsSync(file.path)) {
+      throw { statusCode: 400, message: 'Uploaded file was not saved correctly. Please try again.' };
+    }
+
     try {
       const isImage = file.mimetype.startsWith('image/');
       const options = {
@@ -25,7 +40,9 @@ class StorageService {
       };
     } catch (error) {
       console.error('Cloudinary upload error:', error);
-      throw { statusCode: 500, message: 'Failed to upload file to cloud' };
+      const statusCode = Number(error?.http_code) || 500;
+      const message = error?.message || 'Failed to upload file to cloud';
+      throw { statusCode, message };
     }
   }
 
