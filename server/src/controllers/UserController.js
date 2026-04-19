@@ -15,7 +15,7 @@ class UserController {
   async updateProfile(req, res, next) {
     try {
       // Whitelist only allowed fields to prevent Prisma crashes from extra data
-      const allowedFields = ['name', 'username', 'bio'];
+      const allowedFields = ['name', 'username', 'bio', 'avatarUrl', 'avatarPublicId'];
       const profileData = {};
       
       allowedFields.forEach(field => {
