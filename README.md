@@ -79,15 +79,57 @@ npm run dev
 - **Backend**: [http://localhost:5000](http://localhost:5000)
 - **Frontend**: [http://localhost:5173](http://localhost:5173)
 
-## 🐳 Deployment
+## 🐳 Deployment Guide
 
-1. **Database**: Use a managed PostgreSQL service like Neon, AWS RDS, or Railway.
-2. **Backend**: Deploy the `server/` directory to platforms like Render, Heroku, or DigitalOcean.
-3. **Frontend**: Build the React app and deploy to Vercel, Netlify, or AWS Amplify.
-   ```bash
-   npm run build --prefix client
-   ```
-4. **Environment Variables**: Ensure all variables from `.env.example` are set in your production environment.
+### 1. Database (PostgreSQL)
+We recommend using **Neon DB** or **Render PostgreSQL**.
+- Create a new PostgreSQL database.
+- Copy the **Connection String** (External Database URL).
+- You will need this for the `DATABASE_URL` environment variable.
+
+### 2. Redis (Upstash)
+- Log in to **Upstash** and create a new Redis database.
+- Under the "Details" tab, copy the **Redis URL**.
+- You will need this for the `REDIS_URL` environment variable.
+
+### 3. Backend (Render)
+- Link your GitHub repository to a new **Web Service** on Render.
+- Set the following configuration:
+  - **Root Directory**: `server`
+  - **Environment**: `Node`
+  - **Build Command**: `npm install` (The `postinstall` script will automatically run `prisma generate`)
+  - **Start Command**: `node src/server.js`
+- **Environment Variables**: Add all variables from `server/.env.example`.
+  - Set `NODE_ENV` to `production`.
+  - Set `FRONTEND_URL` to your Vercel URL once it is live.
+
+### 4. Frontend (Vercel)
+- Create a new project on Vercel and link your repository.
+- Set the following configuration:
+  - **Root Directory**: `client`
+  - **Framework Preset**: `Vite`
+  - **Build Command**: `npm run build`
+  - **Output Directory**: `dist`
+- **Environment Variables**: 
+  - `VITE_API_URL`: Set this to your Render backend URL (e.g., `https://your-app.onrender.com/api`).
+  - `VITE_SOCKET_URL`: Set this to your Render backend URL (e.g., `https://your-app.onrender.com`).
+
+---
+
+## 🛠 Required Environment Variables Checklist
+
+| Variable | Platform | Description |
+| :--- | :--- | :--- |
+| `DATABASE_URL` | Render | PostgreSQL connection string |
+| `REDIS_URL` | Render | Upstash Redis connection string |
+| `JWT_ACCESS_SECRET` | Render | Long random string for access tokens |
+| `JWT_REFRESH_SECRET` | Render | Long random string for refresh tokens |
+| `CLOUDINARY_*` | Render | Cloudinary name, key, and secret |
+| `FRONTEND_URL` | Render | Your Vercel domain (e.g., `https://nexus.vercel.app`) |
+| `VITE_API_URL` | Vercel | Your Render API URL (e.g., `https://nexus.onrender.com/api`) |
+| `VITE_SOCKET_URL` | Vercel | Your Render domain (e.g., `https://nexus.onrender.com`) |
+
+---
 
 ## 📄 License
 
