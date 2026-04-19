@@ -2,6 +2,17 @@ import userRepository from '../repositories/UserRepository.js';
 import friendRepository from '../repositories/FriendRepository.js';
 
 class UserService {
+  async updateLastSeen(userId) {
+    try {
+      await userRepository.updateProfile(userId, { 
+        lastSeen: new Date(),
+        isOnline: false 
+      });
+    } catch (error) {
+      console.error('Failed to update lastSeen:', error);
+    }
+  }
+
   async getProfile(userId) {
     const user = await userRepository.findById(userId);
     if (!user) {

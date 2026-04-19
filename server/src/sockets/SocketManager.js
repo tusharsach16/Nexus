@@ -1,4 +1,5 @@
 import chatService from '../services/ChatService.js';
+import userService from '../services/UserService.js';
 import redis from '../config/redis.js';
 
 class SocketManager {
@@ -69,12 +70,15 @@ class SocketManager {
 
       socket.on('disconnect', async () => {
         const userId = socket.userId;
-        if (userId && redis) {
-          await redis.srem(this.REDIS_KEY, userId);
-          const onlineUsers = await redis.smembers(this.REDIS_KEY);
-          this.io.emit('online_users', onlineUsers);
+        if (userId) {
+          if (redis) {
+            await redis.srem(this.REDIS_KEY, userId);
+            const onlineUsers = await redis.smembers(this.REDIS_KEY);
+            this.io.emit('online_users', onlineUsers);
+          }
           this.io.emit('user_offline', userId);
-          console.log(`User ${userId} is offline`);
+          await userService.updateLastSeen(userId);
+          console.log(`User ${userId} is offline and lastSeen updated`);
         }
       });
     });
