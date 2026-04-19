@@ -1,7 +1,7 @@
 import express from 'express';
 import userController from '../controllers/UserController.js';
 import { protect } from '../middleware/auth.js';
-import upload from '../middleware/upload.js';
+import { singleFile } from '../middleware/upload.js';
 
 import { 
   validate, 
@@ -15,7 +15,7 @@ const router = express.Router();
 router.use(protect);
 
 router.get('/profile', userController.getProfile.bind(userController));
-router.patch('/profile', upload.single('avatar'), validate(updateProfileSchema), userController.updateProfile.bind(userController));
+router.patch('/profile', singleFile('avatar'), validate(updateProfileSchema), userController.updateProfile.bind(userController));
 
 router.get('/friends', userController.getFriends.bind(userController));
 router.get('/requests', userController.getFriendRequests.bind(userController));
