@@ -3,7 +3,7 @@ import Sidebar from '../components/Sidebar';
 import ChatWindow from '../components/ChatWindow';
 import useAuthStore from '../store/useAuthStore';
 import useChatStore from '../store/useChatStore';
-import { initiateSocketConnection, disconnectSocket, subscribeToMessages } from '../services/socket';
+import { initiateSocketConnection, disconnectSocket, subscribeToMessages, subscribeToStatus } from '../services/socket';
 
 const Dashboard = () => {
   const user = useAuthStore((state) => state.user);
