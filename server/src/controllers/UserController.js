@@ -14,24 +14,42 @@ class UserController {
 
   async updateProfile(req, res, next) {
     try {
-      const profileData = req.body;
+      // Whitelist only allowed fields to prevent Prisma crashes from extra data
+      const allowedFields = ['name', 'username', 'bio'];
+      const profileData = {};
+      
+      allowedFields.forEach(field => {
+        if (req.body[field] !== undefined) {
+          profileData[field] = req.body[field];
+        }
+      });
       
       if (req.file) {
-        // Handle avatar upload
-        const user = await userService.getProfile(req.user.id);
-        const oldPublicId = user.profile.avatarPublicId;
-        
-        const { url, publicId } = await storageService.uploadFile(req.file, 'chat-app/avatars');
-        profileData.avatarUrl = url;
-        profileData.avatarPublicId = publicId;
-        
-        // Delete old image if it exists
-        if (oldPublicId) {
-          await storageService.deleteFile(oldPublicId);
+        try {
+          // Handle avatar upload
+          const userWithProfile = await userService.getProfile(req.user.id);
+          const oldPublicId = userWithProfile.profile?.avatarPublicId;
+          
+          const { url, publicId } = await storageService.uploadFile(req.file, 'chat-app/avatars');
+          profileData.avatarUrl = url;
+          profileData.avatarPublicId = publicId;
+          
+          // Delete old image if it exists
+          if (oldPublicId) {
+            await storageService.deleteFile(oldPublicId).catch(err => 
+              console.warn('Failed to delete old avatar:', err.message)
+            );
+          }
+        } finally {
+          // Robust temp file removal
+          if (fs.existsSync(req.file.path)) {
+            try {
+              fs.unlinkSync(req.file.path);
+            } catch (fsErr) {
+              console.warn('Could not remove temp file:', fsErr.message);
+            }
+          }
         }
-        
-        // Remove temp file
-        fs.unlinkSync(req.file.path);
       }
 
       const updatedProfile = await userService.updateProfile(req.user.id, profileData);

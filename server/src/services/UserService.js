@@ -40,7 +40,16 @@ class UserService {
   }
 
   async updateProfile(userId, profileData) {
-    return await userRepository.updateProfile(userId, profileData);
+    try {
+      return await userRepository.updateProfile(userId, profileData);
+    } catch (error) {
+      if (error.code === 'P2002') {
+        const err = new Error('Username is already taken');
+        err.statusCode = 400;
+        throw err;
+      }
+      throw error;
+    }
   }
 
   async sendFriendRequest(senderId, receiverId) {
