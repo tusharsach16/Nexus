@@ -29,3 +29,7 @@ build/
 # Prisma
 /server/prisma/generated
 /server/.prisma
+
+# Documentation & Assets
+Nexus_System_Documentation.md
+Nexus_System_Architecture.png
